@@ -1,16 +1,15 @@
 package com.xfef0.fccshops.service.product;
 
 import com.xfef0.fccshops.model.Product;
-import com.xfef0.fccshops.request.AddProductRequest;
-import com.xfef0.fccshops.request.UpdateProductRequest;
+import com.xfef0.fccshops.dto.ProductDto;
 
 import java.util.List;
 
 public interface IProductService {
-    Product addProduct(AddProductRequest request);
+    Product addProduct(ProductDto request);
     Product getProductById(Long id);
     void deleteProductById(Long id);
-    Product updateProduct(UpdateProductRequest request, Long productId);
+    Product updateProduct(ProductDto request, Long productId);
     List<Product> getAllProducts();
     List<Product> getProductsByCategoryName(String category);
     List<Product> getProductsByBrand(String brand);

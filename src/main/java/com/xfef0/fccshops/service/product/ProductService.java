@@ -1,13 +1,11 @@
 package com.xfef0.fccshops.service.product;
 
-import com.xfef0.fccshops.exception.CategoryNotFoundException;
-import com.xfef0.fccshops.exception.ProductNotFoundException;
+import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Category;
 import com.xfef0.fccshops.model.Product;
-import com.xfef0.fccshops.repository.CategoryRepository;
 import com.xfef0.fccshops.repository.ProductRepository;
-import com.xfef0.fccshops.request.AddProductRequest;
-import com.xfef0.fccshops.request.UpdateProductRequest;
+import com.xfef0.fccshops.dto.ProductDto;
+import com.xfef0.fccshops.service.category.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,24 +17,25 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
 
+    public static final String PRODUCT_NOT_FOUND = "Product not found!";
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
+    private final CategoryService categoryService;
 
     @Override
-    public Product addProduct(AddProductRequest request) {
+    public Product addProduct(ProductDto request) {
         Category requestCategory = request.getCategory();
         Objects.requireNonNull(requestCategory);
-        Category category = Optional.ofNullable(categoryRepository.findByName(requestCategory.getName()))
+        Category category = Optional.ofNullable(categoryService.getCategoryByName(requestCategory.getName()))
                 .orElseGet(() -> {
                     Category newCategory = new Category(requestCategory.getName());
-                    return categoryRepository.save(newCategory);
+                    return categoryService.addCategory(newCategory);
                 });
 
         request.setCategory(category);
         return productRepository.save(createProduct(request, category));
     }
 
-    private Product createProduct(AddProductRequest request, Category category) {
+    private Product createProduct(ProductDto request, Category category) {
         return new Product(
                 request.getName(),
                 request.getBrand(),
@@ -50,25 +49,25 @@ public class ProductService implements IProductService {
     @Override
     public Product getProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(ProductNotFoundException::new);
+                .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));
     }
 
     @Override
     public void deleteProductById(Long id) {
-        productRepository.findById(id)
+        Optional.ofNullable(getProductById(id))
                 .ifPresentOrElse(productRepository::delete,
-                        () -> {throw new ProductNotFoundException();});
+                        () -> {throw new ResourceNotFoundException(PRODUCT_NOT_FOUND);});
     }
 
     @Override
-    public Product updateProduct(UpdateProductRequest request, Long productId) {
-        return productRepository.findById(productId)
+    public Product updateProduct(ProductDto request, Long productId) {
+        return Optional.ofNullable(getProductById(productId))
                 .map(existingProduct -> updateExistingProduct(existingProduct, request))
                 .map(productRepository::save)
-                .orElseThrow(ProductNotFoundException::new);
+                .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));
     }
 
-    private Product updateExistingProduct(Product existingProduct, UpdateProductRequest request) {
+    private Product updateExistingProduct(Product existingProduct, ProductDto request) {
         existingProduct.setName(request.getName());
         existingProduct.setBrand(request.getBrand());
         existingProduct.setDescription(request.getDescription());
@@ -76,8 +75,8 @@ public class ProductService implements IProductService {
         existingProduct.setInventory(request.getInventory());
         Category requestCategory = request.getCategory();
         Objects.requireNonNull(requestCategory);
-        Category category = Optional.ofNullable(categoryRepository.findByName(requestCategory.getName()))
-                .orElseThrow(CategoryNotFoundException::new);
+        Category category = Optional.ofNullable(categoryService.getCategoryByName(requestCategory.getName()))
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
         existingProduct.setCategory(category);
         return existingProduct;
     }
