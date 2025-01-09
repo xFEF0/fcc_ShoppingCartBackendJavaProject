@@ -8,11 +8,8 @@ import java.util.List;
 
 public interface IImageService {
 
-    List<ImageDto> addImages(List<MultipartFile> file, Long productId);
-    Image updateImage(MultipartFile file, Long imageId);
+    List<ImageDto> addImages(List<MultipartFile> files, Long productId);
+    void updateImage(MultipartFile file, Long imageId);
     void deleteImageById(Long imageId);
     Image getImageById(Long imageId);
-    Image getImageByName(String name);
-    List<Image> getAllImages();
-    List<Image> getImagesByType(String type);
 }

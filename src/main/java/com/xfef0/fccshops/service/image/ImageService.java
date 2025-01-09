@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,13 +38,13 @@ public class ImageService implements IImageService {
     }
 
     @Override
-    public Image updateImage(MultipartFile file, Long imageId) {
+    public void updateImage(MultipartFile file, Long imageId) {
         Image existingImage = getImageById(imageId);
         try {
             existingImage.setFileName(file.getName());
             existingImage.setFileType(file.getContentType());
             existingImage.setImage(new SerialBlob(file.getBytes()));
-            return imageRepository.save(existingImage);
+            imageRepository.save(existingImage);
         } catch (SQLException | IOException e) {
             throw new RuntimeException(e.getMessage());
         }
@@ -62,22 +61,6 @@ public class ImageService implements IImageService {
     public Image getImageById(Long imageId) {
         return imageRepository.findById(imageId)
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_IMAGE_WITH + " id: "  + imageId));
-    }
-
-    @Override
-    public Image getImageByName(String name) {
-        return Optional.ofNullable(imageRepository.findByName(name))
-                .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_IMAGE_WITH + " name: "  + name));
-    }
-
-    @Override
-    public List<Image> getImagesByType(String type) {
-        return imageRepository.findByType(type);
-    }
-
-    @Override
-    public List<Image> getAllImages() {
-        return imageRepository.findAll();
     }
 
     private void saveImages(MultipartFile file, Product product, List<ImageDto> imageDtos) {
