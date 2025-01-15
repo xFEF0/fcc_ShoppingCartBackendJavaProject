@@ -23,12 +23,13 @@ public class ImageController {
 
     private final IImageService imageService;
 
-    @PostMapping("/upload")
+    @PostMapping
     public ResponseEntity<ApiResponse> saveImages(@RequestParam List<MultipartFile> files,
                                                   @RequestParam Long productId) {
         try {
             List<ImageDto> images = imageService.addImages(files, productId);
-            return ResponseEntity.ok(new ApiResponse("Upload success!", images));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponse("Upload success!", images));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse("Upload failed!", e.getMessage()));
@@ -50,7 +51,7 @@ public class ImageController {
         }
     }
 
-    @PutMapping("/update/{imageId}")
+    @PutMapping("/{imageId}")
     public ResponseEntity<ApiResponse> updateImage(@PathVariable Long imageId, @RequestBody MultipartFile file) {
         try {
             imageService.updateImage(file, imageId);
@@ -64,7 +65,7 @@ public class ImageController {
         }
     }
 
-    @DeleteMapping("/delete/{imageId}")
+    @DeleteMapping("/{imageId}")
     public ResponseEntity<ApiResponse> deleteImage(@PathVariable Long imageId) {
         try {
             imageService.deleteImageById(imageId);
