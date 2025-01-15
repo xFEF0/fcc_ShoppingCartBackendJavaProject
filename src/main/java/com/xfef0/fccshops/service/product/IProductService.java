@@ -11,10 +11,10 @@ public interface IProductService {
     void deleteProductById(Long id);
     Product updateProduct(ProductDto request, Long productId);
     List<Product> getAllProducts();
-    List<Product> getProductsByCategoryName(String category);
+    List<Product> getProductsByCategory(String category);
     List<Product> getProductsByBrand(String brand);
-    List<Product> getProductsByCategoryNameAndBrand(String category, String brand);
     List<Product> getProductsByName(String name);
+    List<Product> getProductsByCategoryAndBrand(String category, String brand);
     List<Product> getProductsByBrandAndName(String brand, String name);
     Long countProductsByBrandAndName(String brand, String name);
 }
