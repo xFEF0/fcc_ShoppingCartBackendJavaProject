@@ -30,11 +30,12 @@ public class CategoryController {
         }
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<ApiResponse> addCategory(@RequestBody Category category) {
         try {
             Category newCategory = categoryService.addCategory(category);
-            return ResponseEntity.ok(new ApiResponse("Success", newCategory));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponse("Category added", newCategory));
         } catch (AlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(new ApiResponse(e.getMessage(), null));
@@ -56,7 +57,7 @@ public class CategoryController {
         }
     }
 
-    @GetMapping("/{categoryName}")
+    @GetMapping("/name/{categoryName}")
     public ResponseEntity<ApiResponse> getCategoryByName(@PathVariable String categoryName) {
         try {
             Category category = categoryService.getCategoryByName(categoryName);
@@ -69,7 +70,7 @@ public class CategoryController {
         }
     }
 
-    @DeleteMapping("/delete/{categoryId}")
+    @DeleteMapping("/{categoryId}")
     public ResponseEntity<ApiResponse> deleteCategory(@PathVariable Long categoryId) {
         try {
             categoryService.deleteCategory(categoryId);
@@ -82,7 +83,7 @@ public class CategoryController {
         }
     }
 
-    @PutMapping("/update/{categoryId}")
+    @PutMapping("/{categoryId}")
     public ResponseEntity<ApiResponse> updateCategory(@RequestBody Category category, @PathVariable Long categoryId) {
         try {
             Category updatedCategory = categoryService.updateCategory(category, categoryId);
