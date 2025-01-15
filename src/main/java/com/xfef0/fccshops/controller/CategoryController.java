@@ -15,7 +15,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("${api.prefix}/category")
+@RequestMapping("${api.prefix}/categories")
 public class CategoryController {
 
     private final ICategoryService categoryService;
@@ -57,10 +57,10 @@ public class CategoryController {
         }
     }
 
-    @GetMapping("/name/{categoryName}")
-    public ResponseEntity<ApiResponse> getCategoryByName(@PathVariable String categoryName) {
+    @GetMapping("/by-name")
+    public ResponseEntity<ApiResponse> getCategoryByName(@RequestParam String name) {
         try {
-            Category category = categoryService.getCategoryByName(categoryName);
+            Category category = categoryService.getCategoryByName(name);
             return ResponseEntity.ok(new ApiResponse("Category found", category));
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

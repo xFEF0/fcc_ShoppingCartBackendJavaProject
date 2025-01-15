@@ -18,8 +18,8 @@ public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String fileName;
-    private String fileType;
+    private String name;
+    private String type;
     private String downloadURL;
 
     @Lob

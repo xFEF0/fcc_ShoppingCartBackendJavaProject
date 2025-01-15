@@ -18,7 +18,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("${api.prefix}/image")
+@RequestMapping("${api.prefix}/images")
 public class ImageController {
 
     private final IImageService imageService;
@@ -43,8 +43,8 @@ public class ImageController {
             Blob imageBlob = image.getImage();
             ByteArrayResource resource = new ByteArrayResource(imageBlob.getBytes(1, (int) imageBlob.length()));
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(image.getFileType()))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + image.getFileName() + "\"")
+                    .contentType(MediaType.parseMediaType(image.getType()))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + image.getName() + "\"")
                     .body(resource);
         } catch (SQLException e) {
             throw new RuntimeException(e);

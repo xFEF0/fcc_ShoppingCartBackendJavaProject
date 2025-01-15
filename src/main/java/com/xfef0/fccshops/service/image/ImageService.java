@@ -41,8 +41,8 @@ public class ImageService implements IImageService {
     public void updateImage(MultipartFile file, Long imageId) {
         Image existingImage = getImageById(imageId);
         try {
-            existingImage.setFileName(file.getName());
-            existingImage.setFileType(file.getContentType());
+            existingImage.setName(file.getName());
+            existingImage.setType(file.getContentType());
             existingImage.setImage(new SerialBlob(file.getBytes()));
             imageRepository.save(existingImage);
         } catch (SQLException | IOException e) {
@@ -66,8 +66,8 @@ public class ImageService implements IImageService {
     private void saveImages(MultipartFile file, Product product, List<ImageDto> imageDtos) {
         try {
             Image image = new Image();
-            image.setFileName(file.getName());
-            image.setFileType(file.getContentType());
+            image.setName(file.getName());
+            image.setType(file.getContentType());
             image.setImage(new SerialBlob(file.getBytes()));
             image.setProduct(product);
 
@@ -77,7 +77,7 @@ public class ImageService implements IImageService {
 
             ImageDto imageDto = new ImageDto();
             imageDto.setImageId(savedImage.getId());
-            imageDto.setImageName(savedImage.getFileName());
+            imageDto.setImageName(savedImage.getName());
             imageDto.setDownloadURL(savedImage.getDownloadURL());
 
             imageDtos.add(imageDto);
