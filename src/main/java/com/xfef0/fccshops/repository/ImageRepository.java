@@ -8,6 +8,6 @@ import java.util.List;
 public interface ImageRepository extends JpaRepository<Image, Long> {
 
     List<Image> findByType(String type);
-
+    List<Image> findByProductId(Long productId);
     Image findByName(String name);
 }

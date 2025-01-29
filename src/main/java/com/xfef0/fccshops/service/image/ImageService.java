@@ -5,7 +5,7 @@ import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Image;
 import com.xfef0.fccshops.model.Product;
 import com.xfef0.fccshops.repository.ImageRepository;
-import com.xfef0.fccshops.service.product.ProductService;
+import com.xfef0.fccshops.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,13 +21,13 @@ import java.util.List;
 public class ImageService implements IImageService {
 
     public static final String NOT_FOUND_IMAGE_WITH = "Not found image with ";
-    private final ProductService productService;
+    private final ProductRepository productRepository;
     private final ImageRepository imageRepository;
-
 
     @Override
     public List<ImageDto> addImages(List<MultipartFile> files, Long productId) {
-        Product product = productService.getProductById(productId);
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found!"));
         List<ImageDto> imageDtos = new ArrayList<>();
 
         files.forEach(file -> {
@@ -63,6 +63,11 @@ public class ImageService implements IImageService {
                 .orElseThrow(() -> new ResourceNotFoundException(NOT_FOUND_IMAGE_WITH + " id: "  + imageId));
     }
 
+    @Override
+    public List<Image> getImageByProductId(Long productId) {
+        return imageRepository.findByProductId(productId);
+    }
+
     private void saveImages(MultipartFile file, Product product, List<ImageDto> imageDtos) {
         try {
             Image image = new Image();
@@ -76,8 +81,8 @@ public class ImageService implements IImageService {
             imageRepository.save(savedImage);
 
             ImageDto imageDto = new ImageDto();
-            imageDto.setImageId(savedImage.getId());
-            imageDto.setImageName(savedImage.getName());
+            imageDto.setId(savedImage.getId());
+            imageDto.setName(savedImage.getName());
             imageDto.setDownloadURL(savedImage.getDownloadURL());
 
             imageDtos.add(imageDto);
