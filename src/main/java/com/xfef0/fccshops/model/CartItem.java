@@ -20,7 +20,7 @@ public class CartItem {
     private Long id;
 
     private int quantity;
-    private BigDecimal unitPrice;
+    private BigDecimal unitPrice = BigDecimal.ZERO;
     private BigDecimal totalPrice;
 
     @ManyToOne
