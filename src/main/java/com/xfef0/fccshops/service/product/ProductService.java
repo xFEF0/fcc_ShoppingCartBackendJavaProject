@@ -1,12 +1,16 @@
 package com.xfef0.fccshops.service.product;
 
+import com.xfef0.fccshops.dto.ImageDto;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Category;
+import com.xfef0.fccshops.model.Image;
 import com.xfef0.fccshops.model.Product;
 import com.xfef0.fccshops.repository.ProductRepository;
 import com.xfef0.fccshops.dto.ProductDto;
-import com.xfef0.fccshops.service.category.CategoryService;
+import com.xfef0.fccshops.service.category.ICategoryService;
+import com.xfef0.fccshops.service.image.IImageService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,9 +21,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductService implements IProductService {
 
-    public static final String PRODUCT_NOT_FOUND = "Product not found!";
+    private static final String PRODUCT_NOT_FOUND = "Product not found!";
     private final ProductRepository productRepository;
-    private final CategoryService categoryService;
+    private final ICategoryService categoryService;
+    private final IImageService imageService;
+    private final ModelMapper modelMapper;
 
     @Override
     public Product addProduct(ProductDto request) {
@@ -56,7 +62,9 @@ public class ProductService implements IProductService {
     public void deleteProductById(Long id) {
         Optional.ofNullable(getProductById(id))
                 .ifPresentOrElse(productRepository::delete,
-                        () -> {throw new ResourceNotFoundException(PRODUCT_NOT_FOUND);});
+                        () -> {
+                            throw new ResourceNotFoundException(PRODUCT_NOT_FOUND);
+                        });
     }
 
     @Override
@@ -114,5 +122,21 @@ public class ProductService implements IProductService {
     @Override
     public Long countProductsByBrandAndName(String brand, String name) {
         return productRepository.countByBrandAndName(brand, name);
+    }
+
+    @Override
+    public List<ProductDto> getProductDTOsFromProducts(List<Product> products) {
+        return products.stream().map(this::convertToDTO).toList();
+    }
+
+    @Override
+    public ProductDto convertToDTO(Product product) {
+        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+        List<Image> images = imageService.getImageByProductId(product.getId());
+        List<ImageDto> imageDtos = images.stream()
+                .map(image -> modelMapper.map(image, ImageDto.class))
+                .toList();
+        productDto.setImages(imageDtos);
+        return productDto;
     }
 }

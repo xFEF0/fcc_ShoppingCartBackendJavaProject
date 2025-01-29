@@ -4,6 +4,7 @@ import com.xfef0.fccshops.model.Category;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class ProductDto {
@@ -14,4 +15,5 @@ public class ProductDto {
     private BigDecimal price;
     private int inventory;
     private Category category;
+    private List<ImageDto> images;
 }
