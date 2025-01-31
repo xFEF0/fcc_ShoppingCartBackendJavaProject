@@ -29,4 +29,11 @@ public class OrderItem {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id")
     private Order order;
+
+    public OrderItem(Order order, Product product, BigDecimal unitPrice, int quantity) {
+        this.order = order;
+        this.product = product;
+        this.amount = unitPrice;
+        this.quantity = quantity;
+    }
 }
