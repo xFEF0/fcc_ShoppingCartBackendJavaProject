@@ -1,6 +1,6 @@
 package com.xfef0.fccshops.controller;
 
-import com.xfef0.fccshops.dto.ImageDto;
+import com.xfef0.fccshops.dto.ImageDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Image;
 import com.xfef0.fccshops.response.ApiResponse;
@@ -27,7 +27,7 @@ public class ImageController {
     public ResponseEntity<ApiResponse> saveImages(@RequestParam List<MultipartFile> files,
                                                   @RequestParam Long productId) {
         try {
-            List<ImageDto> images = imageService.addImages(files, productId);
+            List<ImageDTO> images = imageService.addImages(files, productId);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse("Upload success!", images));
         } catch (Exception e) {

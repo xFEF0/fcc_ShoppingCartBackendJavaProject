@@ -1,6 +1,6 @@
 package com.xfef0.fccshops.service.image;
 
-import com.xfef0.fccshops.dto.ImageDto;
+import com.xfef0.fccshops.dto.ImageDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Image;
 import com.xfef0.fccshops.model.Product;
@@ -25,16 +25,16 @@ public class ImageService implements IImageService {
     private final ImageRepository imageRepository;
 
     @Override
-    public List<ImageDto> addImages(List<MultipartFile> files, Long productId) {
+    public List<ImageDTO> addImages(List<MultipartFile> files, Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found!"));
-        List<ImageDto> imageDtos = new ArrayList<>();
+        List<ImageDTO> imageDTOs = new ArrayList<>();
 
         files.forEach(file -> {
-            saveImages(file, product, imageDtos);
+            saveImages(file, product, imageDTOs);
         });
 
-        return imageDtos;
+        return imageDTOs;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ImageService implements IImageService {
         return imageRepository.findByProductId(productId);
     }
 
-    private void saveImages(MultipartFile file, Product product, List<ImageDto> imageDtos) {
+    private void saveImages(MultipartFile file, Product product, List<ImageDTO> imageDTOs) {
         try {
             Image image = new Image();
             image.setName(file.getName());
@@ -80,12 +80,12 @@ public class ImageService implements IImageService {
             savedImage.setDownloadURL("/api/v1/image/download/" + savedImage.getId());
             imageRepository.save(savedImage);
 
-            ImageDto imageDto = new ImageDto();
+            ImageDTO imageDto = new ImageDTO();
             imageDto.setId(savedImage.getId());
             imageDto.setName(savedImage.getName());
             imageDto.setDownloadURL(savedImage.getDownloadURL());
 
-            imageDtos.add(imageDto);
+            imageDTOs.add(imageDto);
         } catch (IOException | SQLException e) {
             throw new RuntimeException(e.getMessage());
         }
