@@ -1,5 +1,6 @@
 package com.xfef0.fccshops.service.cart;
 
+import com.xfef0.fccshops.dto.CartItemDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Cart;
 import com.xfef0.fccshops.model.CartItem;
@@ -8,9 +9,9 @@ import com.xfef0.fccshops.repository.CartItemRepository;
 import com.xfef0.fccshops.repository.CartRepository;
 import com.xfef0.fccshops.service.product.IProductService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +21,7 @@ public class CartItemService implements ICartItemService {
     private final CartRepository cartRepository;
     private final ICartService cartService;
     private final IProductService productService;
+    private final ModelMapper modelMapper;
 
     @Override
     public CartItem addCartItem(Long cartId, Long productId, int quantity) {
@@ -59,12 +61,20 @@ public class CartItemService implements ICartItemService {
         cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
-                .ifPresent(item -> {
+                .ifPresentOrElse(item -> {
                     item.setQuantity(quantity);
                     item.setUnitPrice(item.getProduct().getPrice());
                     item.setTotalPrice();
-                });
+                }, () -> { throw new ResourceNotFoundException("Product not in cart");});
+        cart.updateTotalAmount();
         cart.setTotalAmount(cart.getTotalAmount());
         cartRepository.save(cart);
+    }
+
+    @Override
+    public CartItemDTO convertToDTO(CartItem cartItem) {
+        CartItemDTO cartItemDTO = modelMapper.map(cartItem, CartItemDTO.class);
+        cartItemDTO.setCartId(cartItem.getCart().getId());
+        return cartItemDTO;
     }
 }

@@ -1,5 +1,6 @@
 package com.xfef0.fccshops.controller;
 
+import com.xfef0.fccshops.dto.CartItemDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.CartItem;
 import com.xfef0.fccshops.response.ApiResponse;
@@ -27,7 +28,8 @@ public class CartItemController {
                 cartId = cartService.initializeCart();
             }
             CartItem cartItem = cartItemService.addCartItem(cartId, productId, quantity);
-            return ResponseEntity.ok(new ApiResponse("Item added.", cartItem));
+            CartItemDTO cartItemDTO = cartItemService.convertToDTO(cartItem);
+            return ResponseEntity.ok(new ApiResponse("Item added.", cartItemDTO));
         } catch (ResourceNotFoundException e) {
             return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
