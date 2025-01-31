@@ -1,15 +1,15 @@
 package com.xfef0.fccshops.service.product;
 
 import com.xfef0.fccshops.model.Product;
-import com.xfef0.fccshops.dto.ProductDto;
+import com.xfef0.fccshops.dto.ProductDTO;
 
 import java.util.List;
 
 public interface IProductService {
-    Product addProduct(ProductDto request);
+    Product addProduct(ProductDTO request);
     Product getProductById(Long id);
     void deleteProductById(Long id);
-    Product updateProduct(ProductDto request, Long productId);
+    Product updateProduct(ProductDTO request, Long productId);
     List<Product> getAllProducts();
     List<Product> getProductsByCategory(String category);
     List<Product> getProductsByBrand(String brand);
@@ -17,6 +17,6 @@ public interface IProductService {
     List<Product> getProductsByCategoryAndBrand(String category, String brand);
     List<Product> getProductsByBrandAndName(String brand, String name);
     Long countProductsByBrandAndName(String brand, String name);
-    List<ProductDto> getProductDTOsFromProducts(List<Product> products);
-    ProductDto convertToDTO(Product product);
+    List<ProductDTO> getProductDTOsFromProducts(List<Product> products);
+    ProductDTO convertToDTO(Product product);
 }

@@ -1,12 +1,12 @@
 package com.xfef0.fccshops.service.product;
 
-import com.xfef0.fccshops.dto.ImageDto;
+import com.xfef0.fccshops.dto.ImageDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Category;
 import com.xfef0.fccshops.model.Image;
 import com.xfef0.fccshops.model.Product;
 import com.xfef0.fccshops.repository.ProductRepository;
-import com.xfef0.fccshops.dto.ProductDto;
+import com.xfef0.fccshops.dto.ProductDTO;
 import com.xfef0.fccshops.service.category.ICategoryService;
 import com.xfef0.fccshops.service.image.IImageService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class ProductService implements IProductService {
     private final ModelMapper modelMapper;
 
     @Override
-    public Product addProduct(ProductDto request) {
+    public Product addProduct(ProductDTO request) {
         Category requestCategory = request.getCategory();
         Objects.requireNonNull(requestCategory);
         Category category = Optional.ofNullable(categoryService.getCategoryByName(requestCategory.getName()))
@@ -41,7 +41,7 @@ public class ProductService implements IProductService {
         return productRepository.save(createProduct(request, category));
     }
 
-    private Product createProduct(ProductDto request, Category category) {
+    private Product createProduct(ProductDTO request, Category category) {
         return new Product(
                 request.getName(),
                 request.getBrand(),
@@ -68,14 +68,14 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Product updateProduct(ProductDto request, Long productId) {
+    public Product updateProduct(ProductDTO request, Long productId) {
         return Optional.ofNullable(getProductById(productId))
                 .map(existingProduct -> updateExistingProduct(existingProduct, request))
                 .map(productRepository::save)
                 .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));
     }
 
-    private Product updateExistingProduct(Product existingProduct, ProductDto request) {
+    private Product updateExistingProduct(Product existingProduct, ProductDTO request) {
         existingProduct.setName(request.getName());
         existingProduct.setBrand(request.getBrand());
         existingProduct.setDescription(request.getDescription());
@@ -125,18 +125,18 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public List<ProductDto> getProductDTOsFromProducts(List<Product> products) {
+    public List<ProductDTO> getProductDTOsFromProducts(List<Product> products) {
         return products.stream().map(this::convertToDTO).toList();
     }
 
     @Override
-    public ProductDto convertToDTO(Product product) {
-        ProductDto productDto = modelMapper.map(product, ProductDto.class);
+    public ProductDTO convertToDTO(Product product) {
+        ProductDTO productDto = modelMapper.map(product, ProductDTO.class);
         List<Image> images = imageService.getImageByProductId(product.getId());
-        List<ImageDto> imageDtos = images.stream()
-                .map(image -> modelMapper.map(image, ImageDto.class))
+        List<ImageDTO> imageDTOs = images.stream()
+                .map(image -> modelMapper.map(image, ImageDTO.class))
                 .toList();
-        productDto.setImages(imageDtos);
+        productDto.setImages(imageDTOs);
         return productDto;
     }
 }
