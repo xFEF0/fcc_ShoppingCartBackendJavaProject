@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class ProductDto {
+public class ProductDTO {
     private Long id;
     private String name;
     private String brand;
@@ -15,5 +15,5 @@ public class ProductDto {
     private BigDecimal price;
     private int inventory;
     private Category category;
-    private List<ImageDto> images;
+    private List<ImageDTO> images;
 }
