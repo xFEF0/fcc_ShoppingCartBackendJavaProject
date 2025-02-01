@@ -2,7 +2,6 @@ package com.xfef0.fccshops.controller;
 
 import com.xfef0.fccshops.dto.CartItemDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
-import com.xfef0.fccshops.model.CartItem;
 import com.xfef0.fccshops.response.ApiResponse;
 import com.xfef0.fccshops.service.cart.ICartItemService;
 import com.xfef0.fccshops.service.cart.ICartService;
@@ -27,9 +26,8 @@ public class CartItemController {
             if (cartId == null) {
                 cartId = cartService.initializeCart();
             }
-            CartItem cartItem = cartItemService.addCartItem(cartId, productId, quantity);
-            CartItemDTO cartItemDTO = cartItemService.convertToDTO(cartItem);
-            return ResponseEntity.ok(new ApiResponse("Item added.", cartItemDTO));
+            CartItemDTO cartItem = cartItemService.addCartItem(cartId, productId, quantity);
+            return ResponseEntity.ok(new ApiResponse("Item added.", cartItem));
         } catch (ResourceNotFoundException e) {
             return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
@@ -55,8 +53,8 @@ public class CartItemController {
                                                           @RequestParam Long productId,
                                                           @RequestParam int quantity) {
         try {
-            cartItemService.updateItemQuantity(cartId, productId, quantity);
-            return ResponseEntity.ok(new ApiResponse("Item quantity updated.", null));
+            CartItemDTO cartItem = cartItemService.updateItemQuantity(cartId, productId, quantity);
+            return ResponseEntity.ok(new ApiResponse("Item quantity updated.", cartItem));
         } catch (ResourceNotFoundException e) {
             return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
         } catch (Exception e) {

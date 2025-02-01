@@ -1,12 +1,10 @@
 package com.xfef0.fccshops.service.cart;
 
 import com.xfef0.fccshops.dto.CartItemDTO;
-import com.xfef0.fccshops.model.CartItem;
 
 public interface ICartItemService {
 
-    CartItem addCartItem(Long cartId, Long productId, int quantity);
+    CartItemDTO addCartItem(Long cartId, Long productId, int quantity);
+    CartItemDTO updateItemQuantity(Long cartId, Long productId, int quantity);
     void removeCartItem(Long cartId, Long productId);
-    void updateItemQuantity(Long cartId, Long productId, int quantity);
-    CartItemDTO convertToDTO(CartItem cartItem);
 }

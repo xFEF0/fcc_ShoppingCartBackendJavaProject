@@ -7,10 +7,10 @@ import java.math.BigDecimal;
 
 public interface ICartService {
 
+    CartDTO getCartDTO(Long id);
     Cart getCart(Long id);
     void clearCart(Long id);
     BigDecimal getTotalPrice(Long id);
     Long initializeCart();
-    CartDTO convertToDTO(Cart cart);
     Cart getCartByUserId(Long userId);
 }

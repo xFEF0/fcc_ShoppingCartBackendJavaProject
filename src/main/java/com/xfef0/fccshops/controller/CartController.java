@@ -2,7 +2,6 @@ package com.xfef0.fccshops.controller;
 
 import com.xfef0.fccshops.dto.CartDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
-import com.xfef0.fccshops.model.Cart;
 import com.xfef0.fccshops.response.ApiResponse;
 import com.xfef0.fccshops.service.cart.ICartService;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +21,8 @@ public class CartController {
     @GetMapping("/{cartId}")
     public ResponseEntity<ApiResponse> getCart(@PathVariable Long cartId) {
         try {
-            Cart cart = cartService.getCart(cartId);
-            CartDTO cartDTO = cartService.convertToDTO(cart);
-            return ResponseEntity.ok(new ApiResponse("Cart found", cartDTO));
+            CartDTO cart = cartService.getCartDTO(cartId);
+            return ResponseEntity.ok(new ApiResponse("Cart found", cart));
         } catch (ResourceNotFoundException e) {
             return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
         } catch (Exception e) {

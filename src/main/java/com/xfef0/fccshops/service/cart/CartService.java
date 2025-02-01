@@ -30,10 +30,17 @@ public class CartService implements ICartService {
         return cartRepository.save(cart);
     }
 
+    @Override
+    public CartDTO getCartDTO(Long id) {
+        Cart cart = getCart(id);
+        return convertToDTO(cart);
+    }
+
     @Transactional
     @Override
     public void clearCart(Long id) {
-        Cart cart = getCart(id);
+        Cart cart = cartRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
         cartItemRepository.deleteAllByCartId(id);
         cart.getItems().clear();
         cartRepository.delete(cart);
@@ -41,7 +48,7 @@ public class CartService implements ICartService {
 
     @Override
     public BigDecimal getTotalPrice(Long id) {
-        Cart cart = getCart(id);
+        CartDTO cart = getCartDTO(id);
         return cart.getTotalAmount();
     }
 
@@ -51,17 +58,16 @@ public class CartService implements ICartService {
     }
 
     @Override
-    public CartDTO convertToDTO(Cart cart) {
+    public Cart getCartByUserId(Long userId) {
+        return cartRepository.findByUserId(userId);
+    }
+
+    private CartDTO convertToDTO(Cart cart) {
         CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
         List<CartItemDTO> itemDTOS = cart.getItems().stream()
                 .map(cartItem -> modelMapper.map(cartItem, CartItemDTO.class))
                 .toList();
         cartDTO.setCartItems(itemDTOS);
         return cartDTO;
-    }
-
-    @Override
-    public Cart getCartByUserId(Long userId) {
-        return cartRepository.findByUserId(userId);
     }
 }

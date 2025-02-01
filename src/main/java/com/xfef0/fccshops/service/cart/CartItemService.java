@@ -24,7 +24,7 @@ public class CartItemService implements ICartItemService {
     private final ModelMapper modelMapper;
 
     @Override
-    public CartItem addCartItem(Long cartId, Long productId, int quantity) {
+    public CartItemDTO addCartItem(Long cartId, Long productId, int quantity) {
         Cart cart = cartService.getCart(cartId);
         Product product = productService.getProductById(productId);
         CartItem cartItem = cart.getItems().stream()
@@ -42,7 +42,8 @@ public class CartItemService implements ICartItemService {
         cartItem.setTotalPrice();
         cart.addItem(cartItem);
         cartRepository.save(cart);
-        return cartItemRepository.save(cartItem);
+        CartItem saved = cartItemRepository.save(cartItem);
+        return convertToDTO(saved);
     }
 
     @Override
@@ -56,23 +57,24 @@ public class CartItemService implements ICartItemService {
     }
 
     @Override
-    public void updateItemQuantity(Long cartId, Long productId, int quantity) {
+    public CartItemDTO updateItemQuantity(Long cartId, Long productId, int quantity) {
         Cart cart = cartService.getCart(cartId);
-        cart.getItems().stream()
+        CartItem cartItem = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
-                .ifPresentOrElse(item -> {
-                    item.setQuantity(quantity);
-                    item.setUnitPrice(item.getProduct().getPrice());
-                    item.setTotalPrice();
-                }, () -> { throw new ResourceNotFoundException("Product not in cart");});
+                .orElseThrow(() -> new ResourceNotFoundException("Product not in cart"));
+
+        cartItem.setQuantity(quantity);
+        cartItem.setUnitPrice(cartItem.getProduct().getPrice());
+        cartItem.setTotalPrice();
+
         cart.updateTotalAmount();
-        cart.setTotalAmount(cart.getTotalAmount());
         cartRepository.save(cart);
+
+        return convertToDTO(cartItem);
     }
 
-    @Override
-    public CartItemDTO convertToDTO(CartItem cartItem) {
+    private CartItemDTO convertToDTO(CartItem cartItem) {
         CartItemDTO cartItemDTO = modelMapper.map(cartItem, CartItemDTO.class);
         cartItemDTO.setCartId(cartItem.getCart().getId());
         return cartItemDTO;
