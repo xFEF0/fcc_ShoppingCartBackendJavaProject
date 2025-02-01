@@ -1,6 +1,7 @@
 package com.xfef0.fccshops.service.product;
 
 import com.xfef0.fccshops.dto.ImageDTO;
+import com.xfef0.fccshops.exception.MissingValueException;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Category;
 import com.xfef0.fccshops.model.Image;
@@ -12,6 +13,7 @@ import com.xfef0.fccshops.service.image.IImageService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -22,23 +24,99 @@ import java.util.Optional;
 public class ProductService implements IProductService {
 
     private static final String PRODUCT_NOT_FOUND = "Product not found!";
+    private static final String CATEGORY_NOT_FOUND = "Category not found!";
     private final ProductRepository productRepository;
     private final ICategoryService categoryService;
     private final IImageService imageService;
     private final ModelMapper modelMapper;
 
     @Override
-    public Product addProduct(ProductDTO request) {
+    public ProductDTO addProduct(ProductDTO request) {
         Category requestCategory = request.getCategory();
-        Objects.requireNonNull(requestCategory);
+        if (requestCategory == null) {
+            throw new MissingValueException("Category is needed.");
+        }
         Category category = Optional.ofNullable(categoryService.getCategoryByName(requestCategory.getName()))
                 .orElseGet(() -> {
                     Category newCategory = new Category(requestCategory.getName());
                     return categoryService.addCategory(newCategory);
                 });
-
         request.setCategory(category);
-        return productRepository.save(createProduct(request, category));
+        Product product = createProduct(request, category);
+        Product savedProduct = productRepository.save(product);
+        return convertToDTO(savedProduct);
+    }
+
+    @Override
+    public ProductDTO getProductById(Long id) {
+        return productRepository.findById(id)
+                .map(this::convertToDTO)
+                .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));
+    }
+
+    @Transactional
+    @Override
+    public void deleteProductById(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException(PRODUCT_NOT_FOUND);
+        }
+        productRepository.deleteById(id);
+    }
+
+    @Override
+    public List<ProductDTO> getAllProducts() {
+        return productRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    @Override
+    public ProductDTO updateProduct(ProductDTO request, Long productId) {
+        return productRepository.findById(productId)
+                .map(existingProduct -> updateExistingProduct(existingProduct, request))
+                .map(productRepository::save)
+                .map(this::convertToDTO)
+                .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByCategory(String category) {
+        return productRepository.findByCategoryName(category).stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByBrand(String brand) {
+        return productRepository.findByBrand(brand).stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByCategoryAndBrand(String category, String brand) {
+        return productRepository.findByCategoryNameAndBrand(category, brand).stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByName(String name) {
+        return productRepository.findByName(name).stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByBrandAndName(String brand, String name) {
+        return productRepository.findByBrandAndName(brand, name).stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    @Override
+    public Long countProductsByBrandAndName(String brand, String name) {
+        return productRepository.countByBrandAndName(brand, name);
     }
 
     private Product createProduct(ProductDTO request, Category category) {
@@ -52,27 +130,14 @@ public class ProductService implements IProductService {
         );
     }
 
-    @Override
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));
-    }
-
-    @Override
-    public void deleteProductById(Long id) {
-        Optional.ofNullable(getProductById(id))
-                .ifPresentOrElse(productRepository::delete,
-                        () -> {
-                            throw new ResourceNotFoundException(PRODUCT_NOT_FOUND);
-                        });
-    }
-
-    @Override
-    public Product updateProduct(ProductDTO request, Long productId) {
-        return Optional.ofNullable(getProductById(productId))
-                .map(existingProduct -> updateExistingProduct(existingProduct, request))
-                .map(productRepository::save)
-                .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));
+    private ProductDTO convertToDTO(Product product) {
+        ProductDTO productDto = modelMapper.map(product, ProductDTO.class);
+        List<Image> images = imageService.getImageByProductId(product.getId());
+        List<ImageDTO> imageDTOs = images.stream()
+                .map(image -> modelMapper.map(image, ImageDTO.class))
+                .toList();
+        productDto.setImages(imageDTOs);
+        return productDto;
     }
 
     private Product updateExistingProduct(Product existingProduct, ProductDTO request) {
@@ -84,59 +149,8 @@ public class ProductService implements IProductService {
         Category requestCategory = request.getCategory();
         Objects.requireNonNull(requestCategory);
         Category category = Optional.ofNullable(categoryService.getCategoryByName(requestCategory.getName()))
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
+                .orElseThrow(() -> new ResourceNotFoundException(CATEGORY_NOT_FOUND));
         existingProduct.setCategory(category);
         return existingProduct;
-    }
-
-    @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
-
-    @Override
-    public List<Product> getProductsByCategory(String category) {
-        return productRepository.findByCategoryName(category);
-    }
-
-    @Override
-    public List<Product> getProductsByBrand(String brand) {
-        return productRepository.findByBrand(brand);
-    }
-
-    @Override
-    public List<Product> getProductsByCategoryAndBrand(String category, String brand) {
-        return productRepository.findByCategoryNameAndBrand(category, brand);
-    }
-
-    @Override
-    public List<Product> getProductsByName(String name) {
-        return productRepository.findByName(name);
-    }
-
-    @Override
-    public List<Product> getProductsByBrandAndName(String brand, String name) {
-        return productRepository.findByBrandAndName(brand, name);
-    }
-
-    @Override
-    public Long countProductsByBrandAndName(String brand, String name) {
-        return productRepository.countByBrandAndName(brand, name);
-    }
-
-    @Override
-    public List<ProductDTO> getProductDTOsFromProducts(List<Product> products) {
-        return products.stream().map(this::convertToDTO).toList();
-    }
-
-    @Override
-    public ProductDTO convertToDTO(Product product) {
-        ProductDTO productDto = modelMapper.map(product, ProductDTO.class);
-        List<Image> images = imageService.getImageByProductId(product.getId());
-        List<ImageDTO> imageDTOs = images.stream()
-                .map(image -> modelMapper.map(image, ImageDTO.class))
-                .toList();
-        productDto.setImages(imageDTOs);
-        return productDto;
     }
 }
