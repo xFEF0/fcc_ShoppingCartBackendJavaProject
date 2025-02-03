@@ -48,7 +48,13 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public ProductDTO getProductById(Long id) {
+    public Product getProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));
+    }
+
+    @Override
+    public ProductDTO getProductDTOById(Long id) {
         return productRepository.findById(id)
                 .map(this::convertToDTO)
                 .orElseThrow(() -> new ResourceNotFoundException(PRODUCT_NOT_FOUND));

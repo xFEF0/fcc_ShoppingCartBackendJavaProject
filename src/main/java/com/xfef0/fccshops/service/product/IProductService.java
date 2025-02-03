@@ -7,7 +7,8 @@ import java.util.List;
 
 public interface IProductService {
     ProductDTO addProduct(ProductDTO request);
-    ProductDTO getProductById(Long id);
+    Product getProductById(Long id);
+    ProductDTO getProductDTOById(Long id);
     void deleteProductById(Long id);
     ProductDTO updateProduct(ProductDTO request, Long productId);
     List<ProductDTO> getAllProducts();
