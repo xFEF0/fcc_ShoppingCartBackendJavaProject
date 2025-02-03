@@ -21,7 +21,7 @@ public class ProductController {
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse> getProductById(@PathVariable Long productId) {
         try {
-            ProductDTO product = productService.getProductById(productId);
+            ProductDTO product = productService.getProductDTOById(productId);
             return ResponseEntity.ok(new ApiResponse("Product found", product));
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
