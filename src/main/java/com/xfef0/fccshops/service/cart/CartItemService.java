@@ -75,8 +75,6 @@ public class CartItemService implements ICartItemService {
     }
 
     private CartItemDTO convertToDTO(CartItem cartItem) {
-        CartItemDTO cartItemDTO = modelMapper.map(cartItem, CartItemDTO.class);
-        cartItemDTO.setCartId(cartItem.getCart().getId());
-        return cartItemDTO;
+        return modelMapper.map(cartItem, CartItemDTO.class);
     }
 }
