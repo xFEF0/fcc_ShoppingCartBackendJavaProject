@@ -42,8 +42,7 @@ public class CartItemService implements ICartItemService {
         cartItem.setTotalPrice();
         cart.addItem(cartItem);
         cartRepository.save(cart);
-        CartItem saved = cartItemRepository.save(cartItem);
-        return convertToDTO(saved);
+        return convertToDTO(cartItem);
     }
 
     @Override

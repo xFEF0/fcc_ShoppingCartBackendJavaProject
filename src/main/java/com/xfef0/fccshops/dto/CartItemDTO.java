@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CartItemDTO {
+    private Long cartId;
     private Long id;
     private int quantity;
     private BigDecimal unitPrice;

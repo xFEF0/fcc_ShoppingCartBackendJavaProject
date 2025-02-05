@@ -2,9 +2,13 @@ package com.xfef0.fccshops.controller;
 
 import com.xfef0.fccshops.dto.CartItemDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
+import com.xfef0.fccshops.model.Cart;
+import com.xfef0.fccshops.model.User;
+import com.xfef0.fccshops.repository.UserRepository;
 import com.xfef0.fccshops.response.ApiResponse;
 import com.xfef0.fccshops.service.cart.ICartItemService;
 import com.xfef0.fccshops.service.cart.ICartService;
+import com.xfef0.fccshops.service.user.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +21,16 @@ public class CartItemController {
 
     private final ICartItemService cartItemService;
     private final ICartService cartService;
+    private final IUserService userService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse> addItemToCart(@RequestParam(required = false) Long cartId,
-                                                     @RequestParam Long productId,
+    public ResponseEntity<ApiResponse> addItemToCart(@RequestParam Long productId,
                                                      @RequestParam int quantity) {
         try {
-            if (cartId == null) {
-                cartId = cartService.initializeCart();
-            }
-            CartItemDTO cartItem = cartItemService.addCartItem(cartId, productId, quantity);
+            // TODO: replace hardcoded UserId
+            User user = userService.getUserById(1L);
+            Cart cart = cartService.initializeCart(user);
+            CartItemDTO cartItem = cartItemService.addCartItem(cart.getId(), productId, quantity);
             return ResponseEntity.ok(new ApiResponse("Item added.", cartItem));
         } catch (ResourceNotFoundException e) {
             return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
