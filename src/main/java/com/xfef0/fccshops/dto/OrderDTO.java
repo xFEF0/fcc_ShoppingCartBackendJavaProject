@@ -16,5 +16,5 @@ public class OrderDTO {
     private LocalDate orderDate;
     private BigDecimal totalAmount;
     private OrderStatus status;
-    private Set<OrderItemDTO> items;
+    private Set<OrderItemDTO> orderItems;
 }

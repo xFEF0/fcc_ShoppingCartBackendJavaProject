@@ -1,6 +1,5 @@
 package com.xfef0.fccshops.service.order;
 
-import com.xfef0.fccshops.dto.CartDTO;
 import com.xfef0.fccshops.dto.OrderDTO;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.*;
