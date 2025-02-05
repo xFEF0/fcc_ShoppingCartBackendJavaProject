@@ -24,10 +24,14 @@ public class UserService implements IUserService {
 
 
     @Override
-    public UserDTO getUserById(Long userId) {
+    public User getUserById(Long userId) {
         return userRepository.findById(userId)
-                .map(this::convertToDTO)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
+    }
+
+    @Override
+    public UserDTO getUserDTOById(Long userId) {
+        return convertToDTO(getUserById(userId));
     }
 
     @Override
@@ -50,8 +54,8 @@ public class UserService implements IUserService {
     @Transactional
     @Override
     public void deleteUser(Long userId) {
-        UserDTO user = getUserById(userId);
-        userRepository.deleteById(user.getId());
+        User user = getUserById(userId);
+        userRepository.delete(user);
     }
 
     private User createUserInDB(CreateUserRequest createUserRequest) {

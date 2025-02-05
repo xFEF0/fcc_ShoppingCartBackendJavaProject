@@ -22,7 +22,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse> getUserById(@PathVariable Long userId) {
         try {
-            UserDTO user = userService.getUserById(userId);
+            UserDTO user = userService.getUserDTOById(userId);
             return ResponseEntity.ok(new ApiResponse("Sucess", user));
         } catch (ResourceNotFoundException e) {
             return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
