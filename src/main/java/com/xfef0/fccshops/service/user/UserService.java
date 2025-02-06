@@ -9,6 +9,9 @@ import com.xfef0.fccshops.request.CreateUserRequest;
 import com.xfef0.fccshops.request.UpdateUserRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +24,7 @@ public class UserService implements IUserService {
     public static final String USER_NOT_FOUND = "User not found.";
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
-
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User getUserById(Long userId) {
@@ -58,12 +61,19 @@ public class UserService implements IUserService {
         userRepository.delete(user);
     }
 
+    @Override
+    public User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email);
+    }
+
     private User createUserInDB(CreateUserRequest createUserRequest) {
         User newUser = new User();
         newUser.setFirstName(createUserRequest.getFirstName());
         newUser.setLastName(createUserRequest.getLastName());
         newUser.setEmail(createUserRequest.getEmail());
-        newUser.setPassword(createUserRequest.getPassword());
+        newUser.setPassword(passwordEncoder.encode(createUserRequest.getPassword()));
         return userRepository.save(newUser);
     }
 

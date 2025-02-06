@@ -9,6 +9,7 @@ import com.xfef0.fccshops.response.ApiResponse;
 import com.xfef0.fccshops.service.cart.ICartItemService;
 import com.xfef0.fccshops.service.cart.ICartService;
 import com.xfef0.fccshops.service.user.IUserService;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +28,14 @@ public class CartItemController {
     public ResponseEntity<ApiResponse> addItemToCart(@RequestParam Long productId,
                                                      @RequestParam int quantity) {
         try {
-            // TODO: replace hardcoded UserId
-            User user = userService.getUserById(1L);
+            User user = userService.getAuthenticatedUser();
             Cart cart = cartService.initializeCart(user);
             CartItemDTO cartItem = cartItemService.addCartItem(cart.getId(), productId, quantity);
             return ResponseEntity.ok(new ApiResponse("Item added.", cartItem));
         } catch (ResourceNotFoundException e) {
             return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
+        } catch (JwtException e) {
+            return getExceptionResponseEntity(e, HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
