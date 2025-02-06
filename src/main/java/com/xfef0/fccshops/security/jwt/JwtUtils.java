@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 @Component
-public class JWTUtils {
+public class JwtUtils {
 
     @Value("${auth.token.expirationInMils}")
     private int expirationTime;
