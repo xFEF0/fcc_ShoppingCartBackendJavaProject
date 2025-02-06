@@ -2,6 +2,7 @@ package com.xfef0.fccshops.controller;
 
 
 import com.xfef0.fccshops.dto.OrderDTO;
+import com.xfef0.fccshops.exception.CartEmptyException;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.response.ApiResponse;
 import com.xfef0.fccshops.service.order.IOrderService;
@@ -26,6 +27,8 @@ public class OrderController {
             return ResponseEntity.ok(new ApiResponse("Success.", order));
         } catch (ResourceNotFoundException e) {
             return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
+        } catch (CartEmptyException e) {
+            return getExceptionResponseEntity(e, HttpStatus.NOT_ACCEPTABLE);
         } catch (Exception e) {
             return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }

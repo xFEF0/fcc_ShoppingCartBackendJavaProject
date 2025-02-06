@@ -1,6 +1,7 @@
 package com.xfef0.fccshops.service.order;
 
 import com.xfef0.fccshops.dto.OrderDTO;
+import com.xfef0.fccshops.exception.CartEmptyException;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.*;
 import com.xfef0.fccshops.repository.OrderRepository;
@@ -34,6 +35,9 @@ public class OrderService implements IOrderService {
     @Override
     public OrderDTO placeOrder(Long userId) {
         Cart cart = cartService.getCartByUserId(userId);
+        if (cart.getItems().isEmpty()) {
+            throw new CartEmptyException("No products in the cart");
+        }
         Order order = createOrder(cart);
         List<OrderItem> orderItems = createOrderItems(order, cart);
         order.setItems(new HashSet<>(orderItems));
