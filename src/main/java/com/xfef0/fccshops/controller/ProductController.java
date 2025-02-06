@@ -1,6 +1,9 @@
 package com.xfef0.fccshops.controller;
 
 import com.xfef0.fccshops.dto.ProductDTO;
+import com.xfef0.fccshops.exception.AlreadyExistsException;
+import com.xfef0.fccshops.exception.CartEmptyException;
+import com.xfef0.fccshops.exception.MissingValueException;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.response.ApiResponse;
 import com.xfef0.fccshops.service.product.IProductService;
@@ -10,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,10 +28,9 @@ public class ProductController {
             ProductDTO product = productService.getProductDTOById(productId);
             return ResponseEntity.ok(new ApiResponse("Product found", product));
         } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
+            return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -37,7 +40,7 @@ public class ProductController {
             List<ProductDTO> allProducts = productService.getAllProducts();
             return ResponseEntity.ok(new ApiResponse("Success", allProducts));
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -51,7 +54,7 @@ public class ProductController {
             }
             return ResponseEntity.ok(new ApiResponse("Products found", products));
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -65,7 +68,7 @@ public class ProductController {
             }
             return ResponseEntity.ok(new ApiResponse("Products found", products));
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -79,7 +82,7 @@ public class ProductController {
             }
             return ResponseEntity.ok(new ApiResponse("Products found", products));
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -94,7 +97,7 @@ public class ProductController {
             }
             return ResponseEntity.ok(new ApiResponse("Products found", products));
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -109,7 +112,7 @@ public class ProductController {
             }
             return ResponseEntity.ok(new ApiResponse("Products found", products));
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -119,7 +122,7 @@ public class ProductController {
             Long count = productService.countProductsByBrandAndName(brand, name);
             return ResponseEntity.ok(new ApiResponse("Products = ", count));
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -129,8 +132,12 @@ public class ProductController {
             ProductDTO addedProduct = productService.addProduct(product);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse("Product added", addedProduct));
+        } catch (MissingValueException e) {
+            return getExceptionResponseEntity(e, HttpStatus.BAD_REQUEST);
+        } catch (AlreadyExistsException e) {
+            return getExceptionResponseEntity(e, HttpStatus.CONFLICT);
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -140,10 +147,9 @@ public class ProductController {
             ProductDTO updatedProduct = productService.updateProduct(product, productId);
             return ResponseEntity.ok(new ApiResponse("Product updated", updatedProduct));
         } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
+            return getExceptionResponseEntity(e, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -156,12 +162,12 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse(e.getMessage(), null));
         } catch (Exception e) {
-            return getInternalServerErrorResponse();
+            return getExceptionResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private static ResponseEntity<ApiResponse> getInternalServerErrorResponse() {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse("Error:", HttpStatus.INTERNAL_SERVER_ERROR));
+    private static ResponseEntity<ApiResponse> getExceptionResponseEntity(Exception e, HttpStatus status) {
+        return ResponseEntity.status(status)
+                .body(new ApiResponse(e.getMessage(), null));
     }
 }

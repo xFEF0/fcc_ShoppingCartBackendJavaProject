@@ -1,6 +1,7 @@
 package com.xfef0.fccshops.service.product;
 
 import com.xfef0.fccshops.dto.ImageDTO;
+import com.xfef0.fccshops.exception.AlreadyExistsException;
 import com.xfef0.fccshops.exception.MissingValueException;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.model.Category;
@@ -32,19 +33,28 @@ public class ProductService implements IProductService {
 
     @Override
     public ProductDTO addProduct(ProductDTO request) {
-        Category requestCategory = request.getCategory();
-        if (requestCategory == null) {
-            throw new MissingValueException("Category is needed.");
+        try {
+            Category requestCategory = Objects.requireNonNull(request.getCategory(), "Category");
+            String requestName = Objects.requireNonNull(request.getName(), "Name");
+            String requestBrand = Objects.requireNonNull(request.getBrand(), "Brand");
+            List<ProductDTO> productsByBrandAndName = getProductsByBrandAndName(requestBrand, requestName);
+            if (!productsByBrandAndName.isEmpty()) {
+                throw new AlreadyExistsException("Product with name = " + requestName +
+                        " and brand = " + requestBrand + " already exists!" +
+                        "\nTry updating it");
+            }
+            Category category = Optional.ofNullable(categoryService.getCategoryByName(requestCategory.getName()))
+                    .orElseGet(() -> {
+                        Category newCategory = new Category(requestCategory.getName());
+                        return categoryService.addCategory(newCategory);
+                    });
+            request.setCategory(category);
+            Product product = createProduct(request, category);
+            Product savedProduct = productRepository.save(product);
+            return convertToDTO(savedProduct);
+        } catch (NullPointerException e) {
+            throw new MissingValueException(e.getMessage() + "  is required.");
         }
-        Category category = Optional.ofNullable(categoryService.getCategoryByName(requestCategory.getName()))
-                .orElseGet(() -> {
-                    Category newCategory = new Category(requestCategory.getName());
-                    return categoryService.addCategory(newCategory);
-                });
-        request.setCategory(category);
-        Product product = createProduct(request, category);
-        Product savedProduct = productRepository.save(product);
-        return convertToDTO(savedProduct);
     }
 
     @Override
