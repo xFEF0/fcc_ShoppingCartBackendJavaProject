@@ -7,3 +7,9 @@ It is designed to help us learn and build applications using Spring Boot, Spring
 - Spring Boot
 - Spring Security
 - JWT
+
+
+## DB Configuration
+`docker pull mysql:latest`
+
+`docker run --env=MYSQL_ROOT_PASSWORD=admin -p 3306:3306 -d mysql`
