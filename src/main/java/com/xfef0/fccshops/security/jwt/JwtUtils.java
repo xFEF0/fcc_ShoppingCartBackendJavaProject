@@ -9,14 +9,17 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
 @Component
 public class JwtUtils {
 
-    @Value("${auth.token.expirationInMils}")
+    @Value("${auth.token.expirationInMillis}")
     private int expirationTime;
+    private final SecretKey secretKey = Jwts.SIG.HS256.key().build();
 
     public String generateTokenForUser(Authentication authentication) {
         ShopUserDetails shopUserDetails = (ShopUserDetails) authentication.getPrincipal();
@@ -27,15 +30,15 @@ public class JwtUtils {
                 .subject(shopUserDetails.getEmail())
                 .claim("id", shopUserDetails.getId())
                 .claim("roles", roles)
-                .issuedAt(new Date())
-                .expiration(new Date(new Date().getTime() + expirationTime))
-                .signWith(getSigningKey())
+                .issuedAt(Date.from(Instant.now()))
+                .expiration(Date.from(Instant.now().plus(expirationTime, ChronoUnit.MILLIS)))
+                .signWith(secretKey)
                 .compact();
     }
 
     public String getUserNameFromToken(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
@@ -45,16 +48,12 @@ public class JwtUtils {
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(getSigningKey())
+                    .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             throw new JwtException(e.getMessage());
         }
-    }
-
-    private SecretKey getSigningKey() {
-        return Jwts.SIG.HS256.key().build();
     }
 }

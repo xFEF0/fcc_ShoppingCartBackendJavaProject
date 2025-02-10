@@ -28,6 +28,6 @@ public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
         body.put("message", "Please authenticate, and try again.");
 
         final ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getOutputStream(), body);
+        mapper.writeValue(response.getWriter(), body);
     }
 }

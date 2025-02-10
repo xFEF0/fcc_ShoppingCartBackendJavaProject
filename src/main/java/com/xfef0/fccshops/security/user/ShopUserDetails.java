@@ -3,7 +3,6 @@ package com.xfef0.fccshops.security.user;
 import com.xfef0.fccshops.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,9 +15,9 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
 public class ShopUserDetails implements UserDetails {
 
+    public static final String ROLE_ = "ROLE_";
     private Long id;
     private String email;
     private String password;
@@ -26,7 +25,7 @@ public class ShopUserDetails implements UserDetails {
 
     public static ShopUserDetails buildUserDetails(User user) {
         Set<GrantedAuthority> authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .map(role -> new SimpleGrantedAuthority(ROLE_ + role.getName()))
                 .collect(Collectors.toSet());
 
         return new ShopUserDetails(

@@ -2,13 +2,16 @@ package com.xfef0.fccshops.security.config;
 
 import com.xfef0.fccshops.security.jwt.AuthTokenFilter;
 import com.xfef0.fccshops.security.jwt.JwtAuthEntryPoint;
+import com.xfef0.fccshops.security.jwt.JwtUtils;
 import com.xfef0.fccshops.security.user.ShopUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,6 +19,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -28,9 +32,10 @@ import java.util.Set;
 @Configuration
 public class ShopConfig {
 
-    private static final Set<String> SECURED_URLS = Set.of("api/v1/carts/**", "api/v1/cartItems/**");
+    private static final Set<String> WHITE_LIST_URLS = Set.of("api/v1/auth/login", "api/v1/categories/**");
     private final ShopUserDetailsService userDetailsService;
     private final JwtAuthEntryPoint authEntryPoint;
+    private final JwtUtils jwtUtils;
 
     @Bean
     public ModelMapper modelMapper() {
@@ -44,7 +49,7 @@ public class ShopConfig {
 
     @Bean
     public AuthTokenFilter authTokenFilter() {
-        return new AuthTokenFilter();
+        return new AuthTokenFilter(jwtUtils, userDetailsService);
     }
 
     @Bean
@@ -53,7 +58,7 @@ public class ShopConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
@@ -64,11 +69,15 @@ public class ShopConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(req ->
+                        req.requestMatchers(WHITE_LIST_URLS.toArray(String[]::new))
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPoint))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers(SECURED_URLS.toArray(String[]::new))
-                        .authenticated().anyRequest().permitAll());
-        httpSecurity.authenticationProvider(daoAuthenticationProvider());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        httpSecurity.authenticationProvider(authenticationProvider());
         httpSecurity.addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
