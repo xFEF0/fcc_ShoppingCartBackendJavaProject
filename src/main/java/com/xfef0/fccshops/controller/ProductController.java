@@ -2,7 +2,6 @@ package com.xfef0.fccshops.controller;
 
 import com.xfef0.fccshops.dto.ProductDTO;
 import com.xfef0.fccshops.exception.AlreadyExistsException;
-import com.xfef0.fccshops.exception.CartEmptyException;
 import com.xfef0.fccshops.exception.MissingValueException;
 import com.xfef0.fccshops.exception.ResourceNotFoundException;
 import com.xfef0.fccshops.response.ApiResponse;
@@ -14,7 +13,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
