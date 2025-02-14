@@ -7,6 +7,7 @@ import com.xfef0.fccshops.model.Cart;
 import com.xfef0.fccshops.model.User;
 import com.xfef0.fccshops.repository.CartItemRepository;
 import com.xfef0.fccshops.repository.CartRepository;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class CartService implements ICartService {
     private final ModelMapper modelMapper;
 
     @Override
-    public Cart getCart(Long id) {
+    public Cart getCart(@NonNull Long id) {
         Cart cart = cartRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
         cart.setTotalAmount(cart.getTotalAmount());
@@ -33,14 +34,14 @@ public class CartService implements ICartService {
     }
 
     @Override
-    public CartDTO getCartDTO(Long id) {
+    public CartDTO getCartDTO(@NonNull Long id) {
         Cart cart = getCart(id);
         return convertToDTO(cart);
     }
 
     @Transactional
     @Override
-    public void clearCart(Long id) {
+    public void clearCart(@NonNull Long id) {
         Cart cart = cartRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
         cartItemRepository.deleteAllByCartId(id);
@@ -50,19 +51,19 @@ public class CartService implements ICartService {
     }
 
     @Override
-    public BigDecimal getTotalPrice(Long id) {
-        CartDTO cart = getCartDTO(id);
+    public BigDecimal getTotalPrice(@NonNull Long id) {
+        Cart cart = getCart(id);
         return cart.getTotalAmount();
     }
 
     @Override
-    public Cart initializeCart(User user) {
+    public Cart initializeCart(@NonNull User user) {
         return Optional.ofNullable(getCartByUserId(user.getId()))
                 .orElseGet(() -> createNewCart(user));
     }
 
     @Override
-    public Cart getCartByUserId(Long userId) {
+    public Cart getCartByUserId(@NonNull Long userId) {
         return cartRepository.findByUserId(userId);
     }
 
